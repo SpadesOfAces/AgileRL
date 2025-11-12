@@ -390,14 +390,14 @@ class IPPO(MultiAgentRLAlgorithm):
                     if self.has_grouped_agents()
                     else agent_id
                 )
-                action_masks[agent_id].append(
-                    info.get("action_mask", None) if isinstance(info, dict) else None
-                )
+                mask = info.get("action_mask", None)
+                if mask is not None:
+                    action_masks[agent_id].append(mask)
 
         # Check and stack masks
         for group_id in self.observation_space:
-            if None in action_masks[group_id] or not action_masks[group_id]:
-                assert all(mask is None for mask in action_masks[group_id]), (
+            if len(action_masks[group_id]) != len(self.grouped_agents[group_id]):
+                assert not len(action_masks[group_id]), (
                     f"If action masks are provided for any agents, they must be provided for all agents. "
                     "Action masks can be defined as an array with the shape of the action space "
                     f"({self.action_space}), where 1=legal and 0=illegal."
